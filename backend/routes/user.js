@@ -1,9 +1,9 @@
-// backend/routes/user.js
+
 const express = require('express');
 
 const router = express.Router();
 const zod = require("zod");
-const { User, Account } = require("../db");
+const { User } = require("../db");
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../config");
 const  { authMiddleware } = require("../middleware");
@@ -40,11 +40,6 @@ router.post("/signup", async (req, res) => {
         lastName: req.body.lastName,
     })
     const userId = user._id;
-
-    await Account.create({
-        userId,
-        balance: 1 + Math.random() * 10000
-    })
 
     const token = jwt.sign({
         userId
@@ -145,10 +140,10 @@ router.get("/bulk", async (req, res) => {
 router.get('/recommendations', authMiddleware, async (req, res) => {
     try {
         const userId = req.userId;
-        const user = await User.findById(userId).populate('friends'); // Populate friends
+        const user = await User.findById(userId).populate('friends');
         const friends = user.friends.map(friend => friend._id);
 
-        // Find potential friends (excluding the user and current friends)
+        
         const potentialFriends = await User.find({
             _id: { $ne: userId, $nin: friends },
             friends: { $in: friends }
